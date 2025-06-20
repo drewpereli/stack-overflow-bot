@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-export default function Ask({title, content, setTitle, setContent, onSubmit}: {
+export default function Ask({
+  title,
+  content,
+  setTitle,
+  setContent,
+  onSubmit,
+}: {
   title: string;
   content: string;
   setTitle: (title: string) => void;
@@ -8,24 +14,67 @@ export default function Ask({title, content, setTitle, setContent, onSubmit}: {
   onSubmit: () => void;
 }) {
   return (
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      <form className="flex flex-col gap-4" onSubmit={(e) => {e.preventDefault(); onSubmit()}}>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-          className="mb-4 p-2 border border-gray-300 rounded"
-        />
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Content"
-          className="mb-4 p-2 border border-gray-300 rounded"
-        />
-        <button type="submit" className="p-2 bg-blue-500 text-white rounded">Ask</button>
-      </form>
-    </div>
-  );
+    <main className="p-8 bg-alt-bg h-screen w-screen overflow-y-auto">
+      <div className="w-full max-w-6xl mx-auto space-y-12">
+        <h1 className="text-2xl font-bold">Ask a public question</h1>
 
+        <form
+          className="space-y-8"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+        >
+          <section className="space-y-8 bg-white shadow rounded p-4">
+            <div className="flex flex-col gap-1">
+              <label className="font-bold" htmlFor="title">
+                <span>Title</span>
+                <span className="text-red-400" title="required">
+                  *
+                </span>
+                <p className="font-normal text-xs">
+                  Be specific and imagine you’re asking a question to another
+                  person
+                </p>
+              </label>
+
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Is there an R function for finding the index of an element in a vector?"
+                className="p-2 text-sm border border-so-black-25 rounded w-full"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="font-bold" htmlFor="title">
+                <span>Body</span>
+                <span className="text-red-400" title="required">
+                  *
+                </span>
+                <p className="font-normal text-xs">
+                  Include all the information someone would need to answer your
+                  question
+                </p>
+              </label>
+
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                id="content"
+                className="p-2 text-sm border border-so-black-25 rounded w-full"
+                rows={15}
+              />
+            </div>
+          </section>
+
+          <button className="bg-button-bg p-2.5 rounded-lg text-white text-sm">
+            Post your question
+          </button>
+        </form>
+      </div>
+    </main>
+  );
 }
