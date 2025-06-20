@@ -2,6 +2,7 @@
 
 import { randomInt } from "es-toolkit";
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 export default function AnswerDisplay({
   title,
@@ -90,7 +91,9 @@ function Post({
         </span>
       </div>
 
-      <p className="text-black">{content}</p>
+      <div className="text-black">
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
     </div>
   );
 }
