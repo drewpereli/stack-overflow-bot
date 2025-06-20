@@ -14,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="h-14 border-b border-so-black-25">
-
-        </header>
+        <header className="h-14 border-b border-so-black-25"></header>
         {children}
       </body>
     </html>
