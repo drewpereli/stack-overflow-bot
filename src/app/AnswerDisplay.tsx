@@ -91,7 +91,7 @@ function Post({
         </span>
       </div>
 
-      <div className="text-black">
+      <div className="text-black markdown">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
