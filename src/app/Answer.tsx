@@ -2,7 +2,7 @@
 
 import { useCompletion } from "@ai-sdk/react";
 import { RESPONSE_TYPES, ResponseType } from "./api/completion/route";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { shuffle, randomInt } from "es-toolkit";
 import AnswerDisplay from "./AnswerDisplay";
 
@@ -13,10 +13,10 @@ export default function Answer({
   title: string;
   content: string;
 }) {
-  const responseTypes = useMemo(() => {
-    const responseCount = randomInt(2, 5);
+  const [responseTypes] = useState<ResponseType[]>(() => {
+    const responseCount = randomInt(3, 6);
     return shuffle(RESPONSE_TYPES).slice(0, responseCount);
-  }, []);
+  });
 
   const [currentResponseType, setCurrentResponseType] = useState<ResponseType>(
     responseTypes[0],
