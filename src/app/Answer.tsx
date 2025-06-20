@@ -1,10 +1,10 @@
 "use client";
 
 import { useCompletion } from "@ai-sdk/react";
-import { RESPONSE_TYPES, ResponseType } from "./api/completion/route";
 import { useEffect, useRef, useState } from "react";
 import { shuffle, randomInt } from "es-toolkit";
 import AnswerDisplay from "./AnswerDisplay";
+import { RESPONSE_TYPES, ResponseType } from "./response-types";
 
 export default function Answer({
   title,

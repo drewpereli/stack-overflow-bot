@@ -1,23 +1,9 @@
+import { ResponseType } from "@/app/response-types";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
-
-export const RESPONSE_TYPES = [
-  "condescending",
-  "nobody-does-that",
-  "duplicate",
-  "confident-wrong-answer",
-  "just-a-doc-link",
-  "nitpicking",
-  "demand-minimal-reproducible-example",
-  "wont-do-homework",
-  "general",
-  "shameless-self-promotion",
-] as const;
-
-export type ResponseType = (typeof RESPONSE_TYPES)[number];
 
 export async function POST(req: Request) {
   const { prompt, responseType } = (await req.json()) as {
