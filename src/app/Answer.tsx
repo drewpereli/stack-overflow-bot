@@ -2,7 +2,7 @@
 
 import { useCompletion } from "@ai-sdk/react";
 import { RESPONSE_TYPES, ResponseType } from "./api/completion/route";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { shuffle, randomInt } from "es-toolkit";
 import AnswerDisplay from "./AnswerDisplay";
 
@@ -32,9 +32,11 @@ export default function Answer({
     "initializing",
   );
 
-  const [responses, setResponses] = useState<{ id: string; content: string }[]>(
-    [],
-  );
+  const [responses, setResponses] = useState<
+    { id: string; content: string; score: number }[]
+  >([]);
+
+  const [userScore, setUserScore] = useState(0);
 
   useEffect(() => {
     if (!isLoading && status === "ready") {
@@ -43,7 +45,7 @@ export default function Answer({
       // Add a new response to the responses array with a unique ID
       setResponses((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), content: "" },
+        { id: crypto.randomUUID(), content: "", score: 0 },
       ]);
 
       const responseTypeIdx = responseTypes.indexOf(currentResponseType);
@@ -74,7 +76,53 @@ export default function Answer({
     setStatus("ready");
   }, []);
 
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (status !== "ready") {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      return;
+    }
+
+    function run() {
+      if (status !== "ready") return;
+
+      const updateUserScore = !!randomInt(0, 2);
+
+      if (updateUserScore) {
+        setUserScore((prev) => prev - 1);
+      } else {
+        setResponses((prev) => {
+          if (!prev.length) return prev;
+          const randResponseId = prev[randomInt(0, prev.length)].id;
+          return prev.map((r) =>
+            r.id === randResponseId ? { ...r, score: r.score + 1 } : r,
+          );
+        });
+      }
+
+      const nextDelay = 100 + randomInt(0, 300);
+      timeoutRef.current = window.setTimeout(run, nextDelay);
+    }
+
+    timeoutRef.current = window.setTimeout(run, 100);
+
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [status]);
+
   return (
-    <AnswerDisplay title={title} content={content} responses={responses} />
+    <AnswerDisplay
+      title={title}
+      content={content}
+      userScore={userScore}
+      responses={responses}
+    />
   );
 }

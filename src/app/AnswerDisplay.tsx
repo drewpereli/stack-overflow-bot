@@ -7,11 +7,13 @@ import ReactMarkdown from "react-markdown";
 export default function AnswerDisplay({
   title,
   content,
+  userScore,
   responses,
 }: {
   title: string;
   content: string;
-  responses: { id: string; content: string }[];
+  userScore: number;
+  responses: { id: string; content: string; score: number }[];
 }) {
   const [viewCount, setViewCount] = useState(0);
 
@@ -40,7 +42,7 @@ export default function AnswerDisplay({
         </div>
 
         <div className="mt-3">
-          <Post content={content} score={0} />
+          <Post content={content} score={userScore} />
         </div>
 
         <div className="space-y-8 mt-20">
@@ -54,7 +56,7 @@ export default function AnswerDisplay({
             <Post
               key={response.id}
               content={response.content}
-              score={0}
+              score={response.score}
               className="pb-8 border-b border-so-black-25"
             />
           ))}
