@@ -69,6 +69,8 @@ function useGenerateResponses(prompt: string) {
         }
       });
     });
+
+    return () => stop();
   }, [messages]);
 
   // Kick off the chat with the initial prompt
