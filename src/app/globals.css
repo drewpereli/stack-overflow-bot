@@ -13,6 +13,7 @@
   --color-so-black-25: #d5d8db;
   --color-alt-bg: rgb(241, 242, 243);
   --color-button-bg: rgb(27, 117, 208);
+  --spacing-content-width: 79rem;
 }
 
 body {

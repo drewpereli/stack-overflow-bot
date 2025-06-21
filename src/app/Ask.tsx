@@ -14,8 +14,8 @@ export default function Ask({
   onSubmit: () => void;
 }) {
   return (
-    <main className="p-8 bg-alt-bg h-screen w-screen overflow-y-auto">
-      <div className="w-full max-w-6xl mx-auto space-y-12">
+    <main className="p-8 bg-alt-bg basis-0 grow w-screen overflow-y-auto">
+      <div className="w-full max-w-content-width mx-auto space-y-12">
         <h1 className="text-2xl font-bold">Ask a public question</h1>
 
         <form

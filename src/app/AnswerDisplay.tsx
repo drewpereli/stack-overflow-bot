@@ -22,8 +22,8 @@ export default function AnswerDisplay({
   const responsesWithContent = responses.filter((r) => !!r.content);
 
   return (
-    <main className="p-8 bg-white h-screen w-screen overflow-y-auto">
-      <div className="w-full max-w-6xl mx-auto">
+    <main className="p-8 bg-white basis-0 grow w-screen overflow-y-auto">
+      <div className="w-full max-w-content-width mx-auto">
         <div className="border-b border-so-black-25 pb-3 space-y-3">
           <h1 className="text-black text-2xl">{title}</h1>
           <p className="text-sm flex items-center gap-4">
