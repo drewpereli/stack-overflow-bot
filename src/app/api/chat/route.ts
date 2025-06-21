@@ -1,17 +1,52 @@
-import { ResponseType } from "@/app/response-types";
+import { RESPONSE_TYPES, ResponseType } from "@/app/response-types";
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { createDataStreamResponse, streamText } from "ai";
+import { randomInt, shuffle } from "es-toolkit";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { prompt, responseType } = (await req.json()) as {
-    prompt: string;
-    responseType: ResponseType;
+  const { messages } = (await req.json()) as {
+    messages: { role: string; content: string }[];
   };
 
-  const systemPrompt = {
+  const responseCount = randomInt(3, 6);
+  const responseTypes = shuffle(RESPONSE_TYPES).slice(0, responseCount);
+
+  const prompt = messages[0].content;
+
+  return createDataStreamResponse({
+    execute: async (dataStream) => {
+      for (const [idx, responseType] of responseTypes.entries()) {
+        const result = generateResponse(prompt, responseType);
+
+        const isFirst = idx === 0;
+        const isLast = idx === responseTypes.length - 1;
+
+        result.mergeIntoDataStream(dataStream, {
+          experimental_sendStart: isFirst,
+          experimental_sendFinish: isLast,
+        });
+
+        if (!isLast) {
+          await result.response;
+        }
+      }
+    },
+  });
+}
+
+export function generateResponse(prompt: string, responseType: ResponseType) {
+  return streamText({
+    model: openai("gpt-4o"),
+    system: getSystemPrompt(responseType),
+    prompt,
+  });
+}
+
+function getSystemPrompt(responseType: ResponseType) {
+  const basePrompt = {
     condescending: `
       You are an expert software engineer, but you have a superiority complex and respond with subtle condescension. 
       The user will ask you a question, and you will answer it accurately but in the most condescending way possible.
@@ -81,14 +116,9 @@ export async function POST(req: Request) {
     `,
   }[responseType];
 
-  const result = streamText({
-    model: openai("gpt-4o"),
-    system:
-      `A user has posted a question to a programming forum. ` +
-      systemPrompt +
-      " Remember to respond as if you're replying to a question on a programming forum, not as if you're writing an essay or having a conversation.",
-    prompt,
-  });
-
-  return result.toDataStreamResponse();
+  return (
+    `A user has posted a question to a programming forum. ` +
+    basePrompt +
+    " Remember to respond as if you're replying to a question on a programming forum, not as if you're writing an essay or having a conversation."
+  );
 }

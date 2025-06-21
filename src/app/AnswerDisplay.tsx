@@ -7,13 +7,11 @@ import ReactMarkdown from "react-markdown";
 export default function AnswerDisplay({
   title,
   content,
-  userScore,
   responses,
 }: {
   title: string;
   content: string;
-  userScore: number;
-  responses: { id: string; content: string; score: number }[];
+  responses: { id: string; content: string; status: "streaming" | "done" }[];
 }) {
   const [viewCount, setViewCount] = useState(0);
 
@@ -42,7 +40,12 @@ export default function AnswerDisplay({
         </div>
 
         <div className="mt-3">
-          <Post content={content} score={userScore} />
+          <PostWithUpdatingScore
+            content={content}
+            initialScore={0}
+            shouldUpdateScore={true}
+            scoreDirection="down"
+          />
         </div>
 
         <div className="space-y-8 mt-20">
@@ -53,10 +56,12 @@ export default function AnswerDisplay({
           </h2>
 
           {responsesWithContent.map((response) => (
-            <Post
+            <PostWithUpdatingScore
               key={response.id}
               content={response.content}
-              score={response.score}
+              shouldUpdateScore={response.status === "done"}
+              initialScore={0}
+              scoreDirection="up"
               className="pb-8 border-b border-so-black-25"
             />
           ))}
@@ -64,6 +69,53 @@ export default function AnswerDisplay({
       </div>
     </main>
   );
+}
+
+function PostWithUpdatingScore({
+  content,
+  shouldUpdateScore,
+  initialScore,
+  scoreDirection,
+  className,
+}: {
+  content: string;
+  shouldUpdateScore: boolean;
+  initialScore: number;
+  scoreDirection: "up" | "down";
+  className?: string;
+}) {
+  const [score, setScore] = useState(initialScore);
+
+  useEffect(() => {
+    if (!shouldUpdateScore) return;
+
+    const abortController = new AbortController();
+
+    const scoreChangeCount = randomInt(5, 20);
+
+    const timeouts = Array.from({ length: scoreChangeCount }, () =>
+      randomInt(300, 1000),
+    );
+
+    (async () => {
+      for (const timeout of timeouts) {
+        if (abortController.signal.aborted) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, timeout));
+
+        setScore((prevScore) =>
+          scoreDirection === "up" ? prevScore + 1 : prevScore - 1,
+        );
+      }
+    })();
+
+    return () => abortController.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldUpdateScore]);
+
+  return <Post content={content} score={score} className={className} />;
 }
 
 function Post({
