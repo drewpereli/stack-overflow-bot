@@ -41,7 +41,7 @@ export default function AnswerDisplay({
 
         <div className="mt-3">
           <PostWithUpdatingScore
-            content={content}
+            content={content || title}
             initialScore={0}
             shouldUpdateScore={true}
             scoreDirection="down"

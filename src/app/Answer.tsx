@@ -71,6 +71,7 @@ function useGenerateResponses(prompt: string) {
     });
 
     return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
   // Kick off the chat with the initial prompt

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   });
 }
 
-export function generateResponse(prompt: string, responseType: ResponseType) {
+function generateResponse(prompt: string, responseType: ResponseType) {
   return streamText({
     model: openai("gpt-4o"),
     system: getSystemPrompt(responseType),
