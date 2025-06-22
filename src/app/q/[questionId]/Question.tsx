@@ -2,9 +2,9 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef, useState } from "react";
-import AnswerDisplay from "./AnswerDisplay";
+import QuestionDisplay from "./QuestionDisplay";
 
-export default function Answer({
+export default function Question({
   title,
   content,
 }: {
@@ -14,7 +14,7 @@ export default function Answer({
   const { responses } = useGenerateResponses(`# ${title}\n\n${content ?? ""}`);
 
   return (
-    <AnswerDisplay title={title} content={content} responses={responses} />
+    <QuestionDisplay title={title} content={content} responses={responses} />
   );
 }
 
