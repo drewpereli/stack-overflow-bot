@@ -13,3 +13,32 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Question {
+  id      String         @id
+  title   String
+  content String?
+  status  QuestionStatus @default(PENDING)
+
+  answers Answer[]
+
+  createdAt DateTime @default(now())
+}
+
+enum QuestionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Answer {
+  id         String @id
+  content    String
+  answerType String
+  order      Int
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now())
+}
