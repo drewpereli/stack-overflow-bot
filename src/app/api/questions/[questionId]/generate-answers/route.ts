@@ -1,51 +1,109 @@
-import { RESPONSE_TYPES, ResponseType } from "@/app/response-types";
+import { ANSWER_TYPE, AnswerType } from "@/app/response-types";
+import { prisma } from "@/lib/prisma";
 import { openai } from "@ai-sdk/openai";
 import { createDataStreamResponse, streamText } from "ai";
 import { randomInt, shuffle } from "es-toolkit";
+import { nanoid } from "nanoid";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-export async function POST(req: Request) {
-  const { messages } = (await req.json()) as {
-    messages: { role: string; content: string }[];
-  };
+/**
+ * This route is responsible for generating answers to a question and streaming them back to the client.
+ * It is invoked by the `useChat` hook in the Question component (src/app/q/[questionId]/Question.tsx).
+ * The response needs to match a specific format that the `useChat` hook expects.
+ * useChat is generally used for generating a single response after a user prompt, but in this case we use it to generate multiple responses (answers) to a question, and we have no user prompt because we generate it from the question record.
+ * However, the vercel ai sdk has a built-in way of streaming multiple responses for a single request. See https://ai-sdk.dev/cookbook/next/stream-text-multistep
+ */
+export async function POST(
+  _: Request,
+  { params }: { params: Promise<{ questionId: string }> },
+) {
+  const { questionId } = await params;
+
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      status: true,
+    },
+  });
+
+  if (!question) {
+    return Response.json(
+      { error: "Question not found" },
+      {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (question.status !== "PENDING") {
+    return Response.json(
+      {
+        error: "Question is not in PENDING status. Cannot generate answers.",
+      },
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
 
   const responseCount = randomInt(3, 6);
-  const responseTypes = shuffle(RESPONSE_TYPES).slice(0, responseCount);
+  const answerTypes = shuffle(ANSWER_TYPE).slice(0, responseCount);
 
-  const prompt = messages[0].content;
+  const prompt = `# ${question.title}\n\n${question.content ?? ""}`;
+
+  await prisma.question.update({
+    where: { id: question.id },
+    data: { status: "IN_PROGRESS" },
+  });
 
   return createDataStreamResponse({
     execute: async (dataStream) => {
-      for (const [idx, responseType] of responseTypes.entries()) {
-        const result = generateResponse(prompt, responseType);
+      for (const [idx, answerType] of answerTypes.entries()) {
+        const result = generateResponse(prompt, answerType);
 
         const isFirst = idx === 0;
-        const isLast = idx === responseTypes.length - 1;
+        const isLast = idx === answerTypes.length - 1;
 
         result.mergeIntoDataStream(dataStream, {
           experimental_sendStart: isFirst,
           experimental_sendFinish: isLast,
         });
 
-        if (!isLast) {
-          await result.response;
-        }
+        const text = await result.text;
+
+        await prisma.answer.create({
+          data: {
+            id: nanoid(15),
+            content: text,
+            questionId: question.id,
+            order: idx + 1,
+            answerType,
+            score: randomInt(10, 50),
+          },
+        });
       }
+
+      await prisma.question.update({
+        where: { id: question.id },
+        data: { status: "COMPLETED" },
+      });
     },
   });
 }
 
-function generateResponse(prompt: string, responseType: ResponseType) {
+function generateResponse(prompt: string, answerType: AnswerType) {
   return streamText({
-    model: openai("gpt-4o"),
-    system: getSystemPrompt(responseType),
+    model: openai("gpt-4.1-nano"),
+    system: getSystemPrompt(answerType),
     prompt,
   });
 }
 
-function getSystemPrompt(responseType: ResponseType) {
+function getSystemPrompt(answerType: AnswerType) {
   const basePrompt = {
     condescending: `
       You are an expert software engineer, but you have a superiority complex and respond with subtle condescension. 
@@ -114,7 +172,7 @@ function getSystemPrompt(responseType: ResponseType) {
       Make sure to include the fact that you are the creator of the product or service, and that it is the best solution to their problem.
       Respond casually and coldly, not like a salesperson or a promoter.
     `,
-  }[responseType];
+  }[answerType];
 
   return (
     `A user has posted a question to a programming forum. ` +

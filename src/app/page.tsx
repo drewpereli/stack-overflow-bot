@@ -1,25 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Ask from "./Ask";
-import Answer from "./Answer";
+import { createQuestion } from "./actions";
+import NewQuestion from "./NewQuestion";
+
+import { redirect } from "next/navigation";
 
 export default function Chat() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const onSubmit = async ({
+    title,
+    content,
+  }: {
+    title: string;
+    content: string;
+  }) => {
+    const { id } = await createQuestion({ title, content });
+    redirect(`/q/${id}`);
+  };
 
-  if (!submitted) {
-    return (
-      <Ask
-        title={title}
-        content={content}
-        setTitle={setTitle}
-        setContent={setContent}
-        onSubmit={() => setSubmitted(true)}
-      />
-    );
-  } else {
-    return <Answer title={title} content={content} />;
-  }
+  return <NewQuestion onSubmit={onSubmit} />;
 }

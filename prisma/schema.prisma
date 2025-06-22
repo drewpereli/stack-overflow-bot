@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Question {
+  id      String         @id
+  title   String
+  content String?
+  score   Int            @default(0)
+  status  QuestionStatus @default(PENDING)
+
+  answers Answer[]
+
+  createdAt DateTime @default(now())
+}
+
+enum QuestionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Answer {
+  id         String @id
+  content    String
+  answerType String
+  order      Int
+  score      Int    @default(0)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now())
+}

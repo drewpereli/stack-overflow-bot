@@ -1,4 +1,4 @@
-export const RESPONSE_TYPES = [
+export const ANSWER_TYPE = [
   "condescending",
   "nobody-does-that",
   "duplicate",
@@ -11,4 +11,4 @@ export const RESPONSE_TYPES = [
   "shameless-self-promotion",
 ] as const;
 
-export type ResponseType = (typeof RESPONSE_TYPES)[number];
+export type AnswerType = (typeof ANSWER_TYPE)[number];
