@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { randomInt } from "es-toolkit";
 import { nanoid } from "nanoid";
 
 export async function createQuestion({
@@ -16,6 +17,7 @@ export async function createQuestion({
       id: nanoid(10),
       title,
       content,
+      score: randomInt(-50, -10),
     },
   });
 
