@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
 function generateResponse(prompt: string, answerType: AnswerType) {
   return streamText({
-    model: openai("gpt-4o"),
+    model: openai("gpt-4.1-nano"),
     system: getSystemPrompt(answerType),
     prompt,
   });
