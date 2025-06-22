@@ -1,20 +1,54 @@
 import { ANSWER_TYPE, AnswerType } from "@/app/response-types";
+import { prisma } from "@/lib/prisma";
 import { openai } from "@ai-sdk/openai";
 import { createDataStreamResponse, streamText } from "ai";
 import { randomInt, shuffle } from "es-toolkit";
+import { nanoid } from "nanoid";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-export async function POST(req: Request) {
-  const { messages } = (await req.json()) as {
-    messages: { role: string; content: string }[];
-  };
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ questionId: string }> },
+) {
+  const { questionId } = await params;
+
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      status: true,
+    },
+  });
+
+  if (!question) {
+    return new Response(JSON.stringify({ error: "Question not found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (question.status !== "PENDING") {
+    return new Response(
+      JSON.stringify({
+        error: "Question is not in PENDING status. Cannot generate answers.",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
 
   const responseCount = randomInt(3, 6);
   const answerTypes = shuffle(ANSWER_TYPE).slice(0, responseCount);
 
-  const prompt = messages[0].content;
+  const prompt = `# ${question.title}\n\n${question.content ?? ""}`;
+
+  await prisma.question.update({
+    where: { id: question.id },
+    data: { status: "IN_PROGRESS" },
+  });
 
   return createDataStreamResponse({
     execute: async (dataStream) => {
@@ -29,10 +63,23 @@ export async function POST(req: Request) {
           experimental_sendFinish: isLast,
         });
 
-        if (!isLast) {
-          await result.response;
-        }
+        const text = await result.text;
+
+        await prisma.answer.create({
+          data: {
+            id: nanoid(15),
+            content: text,
+            questionId: question.id,
+            order: idx + 1,
+            answerType,
+          },
+        });
       }
+
+      await prisma.question.update({
+        where: { id: question.id },
+        data: { status: "COMPLETED" },
+      });
     },
   });
 }

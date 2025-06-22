@@ -1,89 +1,80 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import QuestionDisplay from "./QuestionDisplay";
+import { Answer, Question } from "@/generated/prisma";
+import { UIMessage } from "ai";
 
-export default function Question({
-  title,
-  content,
+export type QuestionWithAnswers = Pick<
+  Question,
+  "id" | "title" | "content" | "status"
+> & {
+  answers: Pick<Answer, "id" | "content" | "order">[];
+};
+
+export default function QuestionComponent({
+  question,
 }: {
-  title: string;
-  content: string;
+  question: QuestionWithAnswers;
 }) {
-  const { responses } = useGenerateResponses(`# ${title}\n\n${content ?? ""}`);
+  const { responses } = useGenerateResponses(
+    question,
+    question.status === "PENDING",
+  );
 
   return (
-    <QuestionDisplay title={title} content={content} responses={responses} />
+    <QuestionDisplay
+      title={question.title}
+      content={question.content ?? question.title}
+      responses={question.status === "PENDING" ? responses : question.answers}
+    />
   );
 }
 
-function useGenerateResponses(prompt: string) {
+function useGenerateResponses(
+  question: Pick<Question, "id" | "title" | "content">,
+  enabled: boolean,
+) {
   const [done, setDone] = useState(false);
 
-  const [responses, setResponses] = useState<
-    { id: string; content: string; status: "streaming" | "done" }[]
-  >([]);
-
   const { messages, stop, append } = useChat({
-    // Once the response is done, we can set the status to done and set all responses to done
+    api: `/api/questions/${question.id}/generate-answers`,
     onFinish: () => {
       setDone(true);
-
-      setResponses((prev) =>
-        prev.map((response) => ({ ...response, status: "done" })),
-      );
     },
   });
 
+  const responses = messagesToResponseObjects(messages);
+
+  // Kick off the generation request
   useEffect(() => {
-    // Get the assistant message
-    const assistantMessage = messages.find((msg) => msg.role === "assistant");
+    if (enabled) append({ role: "user", content: "" });
 
-    if (!assistantMessage) return;
-
-    const parts = assistantMessage.parts;
-
-    const textParts = parts.filter((p) => p.type === "text").map((p) => p.text);
-
-    setResponses((prev) => {
-      return textParts.map((text, index) => {
-        const isLast = index === textParts.length - 1;
-
-        const existing = prev[index];
-
-        if (existing) {
-          // Update existing response
-          return {
-            ...existing,
-            content: text,
-            status: isLast ? "streaming" : "done",
-          };
-        } else {
-          // Create new response
-          return {
-            id: `response-${index}`,
-            content: text,
-            status: "streaming",
-          };
-        }
-      });
-    });
-  }, [messages]);
-
-  // Stupid strict mode issue workaround
-  const initialized = useRef(false);
-
-  // Kick off the chat with the initial prompt
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    append({ role: "user", content: prompt });
-
-    return () => stop();
+    return () => {
+      new Promise((res) => setTimeout(res, 1)).then(() => stop());
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   return { responses: responses, done };
+}
+
+function messagesToResponseObjects(
+  messages: UIMessage[],
+): { id: string; content: string }[] {
+  const assistantMessage = messages.find((msg) => msg.role === "assistant");
+
+  if (!assistantMessage) return [];
+
+  const parts = assistantMessage.parts;
+
+  const textParts = parts.filter((p) => p.type === "text").map((p) => p.text);
+
+  return textParts.map((text, index) => {
+    return {
+      id: `response-${index}`,
+      content: text,
+    };
+  });
 }

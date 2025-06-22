@@ -11,7 +11,7 @@ export default function QuestionDisplay({
 }: {
   title: string;
   content: string;
-  responses: { id: string; content: string; status: "streaming" | "done" }[];
+  responses: { id: string; content: string; status?: "streaming" | "done" }[];
 }) {
   const [viewCount, setViewCount] = useState(0);
 

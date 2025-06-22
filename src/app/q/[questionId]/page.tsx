@@ -22,8 +22,12 @@ export default async function QuestionPage({
       status: true,
       answers: {
         select: {
+          id: true,
           order: true,
           content: true,
+        },
+        orderBy: {
+          order: "asc",
         },
       },
     },
@@ -33,10 +37,5 @@ export default async function QuestionPage({
     notFound();
   }
 
-  return (
-    <Question
-      title={question.title}
-      content={question.content ?? question.title}
-    />
-  );
+  return <Question question={question} />;
 }
