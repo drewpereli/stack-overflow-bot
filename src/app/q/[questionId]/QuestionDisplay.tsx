@@ -29,6 +29,8 @@ export default function QuestionDisplay({
 
   const responsesWithContent = question.answers.filter((r) => !!r.content);
 
+  const isClient = useIsClient();
+
   return (
     <main className="p-8 bg-white basis-0 grow w-screen overflow-y-auto">
       <div className="w-full max-w-content-width mx-auto">
@@ -54,7 +56,7 @@ export default function QuestionDisplay({
             targetScore={question.score}
             animateScore={animateScores}
             shareLink={
-              includeShareLinks
+              includeShareLinks && isClient
                 ? relativeUrlToAbsolute(`/q/${question.id}`)
                 : undefined
             }
@@ -76,7 +78,7 @@ export default function QuestionDisplay({
               targetScore={response.score}
               animateScore={animateScores}
               shareLink={
-                includeShareLinks
+                includeShareLinks && isClient
                   ? relativeUrlToAbsolute(`/q/${question.id}?a=${response.id}`)
                   : undefined
               }
@@ -89,6 +91,17 @@ export default function QuestionDisplay({
   );
 }
 
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient;
+}
+
+// This should only be used on the client side, as it relies on `window.location`.
 function relativeUrlToAbsolute(path: string): string {
   const currentOrigin = new URL(window.location.href).origin;
 
