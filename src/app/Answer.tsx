@@ -11,7 +11,7 @@ export default function Answer({
   title: string;
   content: string;
 }) {
-  const { responses } = useGenerateResponses(content);
+  const { responses } = useGenerateResponses(`# ${title}\n\n${content ?? ""}`);
 
   return (
     <AnswerDisplay title={title} content={content} responses={responses} />
