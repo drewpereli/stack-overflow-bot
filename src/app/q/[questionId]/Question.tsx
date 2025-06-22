@@ -1,16 +1,17 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import QuestionDisplay from "./QuestionDisplay";
 import { Answer, Question } from "@/generated/prisma";
 import { UIMessage } from "ai";
+import { revalidateQuestion } from "./actions";
 
 export type QuestionWithAnswers = Pick<
   Question,
-  "id" | "title" | "content" | "status"
+  "id" | "title" | "content" | "status" | "score"
 > & {
-  answers: Pick<Answer, "id" | "content" | "order">[];
+  answers: Pick<Answer, "id" | "content" | "order" | "score">[];
 };
 
 export default function QuestionComponent({
@@ -18,30 +19,41 @@ export default function QuestionComponent({
 }: {
   question: QuestionWithAnswers;
 }) {
-  const { responses } = useGenerateResponses(
-    question,
-    question.status === "PENDING",
-  );
+  const isPending = question.status === "PENDING";
+
+  const { responses } = useGenerateResponses(question, {
+    enabled: isPending,
+    onFinish: () => revalidateQuestion(question.id),
+  });
+
+  // As you can see above, if the question is in the pending state, we start generating responses, then revalidate the question when the generation is done.
+  // We use a ref to track if the question started as pending, so we can animate the scores after the generation and revalidation are complete.
+  // If the question did not start as pending, we do not animate the scores.
+  const startedAsPending = useRef(isPending);
+
+  const displayResponses = isPending
+    ? responses.map((r) => ({ ...r, score: 0 }))
+    : question.answers;
 
   return (
     <QuestionDisplay
       title={question.title}
       content={question.content ?? question.title}
-      responses={question.status === "PENDING" ? responses : question.answers}
+      score={question.score}
+      responses={displayResponses}
+      animateScores={startedAsPending.current}
     />
   );
 }
 
 function useGenerateResponses(
   question: Pick<Question, "id" | "title" | "content">,
-  enabled: boolean,
+  options: { enabled: boolean; onFinish: () => unknown },
 ) {
-  const [done, setDone] = useState(false);
-
   const { messages, stop, append } = useChat({
     api: `/api/questions/${question.id}/generate-answers`,
     onFinish: () => {
-      setDone(true);
+      options.onFinish();
     },
   });
 
@@ -49,15 +61,15 @@ function useGenerateResponses(
 
   // Kick off the generation request
   useEffect(() => {
-    if (enabled) append({ role: "user", content: "" });
+    if (options.enabled) append({ role: "user", content: "" });
 
     return () => {
       new Promise((res) => setTimeout(res, 1)).then(() => stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [options.enabled]);
 
-  return { responses: responses, done };
+  return { responses };
 }
 
 function messagesToResponseObjects(

@@ -7,11 +7,15 @@ import { PostWithUpdatingScore } from "./Post";
 export default function QuestionDisplay({
   title,
   content,
+  score,
   responses,
+  animateScores,
 }: {
   title: string;
   content: string;
-  responses: { id: string; content: string; status?: "streaming" | "done" }[];
+  score: number;
+  responses: { id: string; content: string; score: number }[];
+  animateScores: boolean;
 }) {
   const [viewCount, setViewCount] = useState(0);
 
@@ -43,8 +47,8 @@ export default function QuestionDisplay({
           <PostWithUpdatingScore
             content={content || title}
             initialScore={0}
-            shouldUpdateScore={true}
-            scoreDirection="down"
+            targetScore={score}
+            animateScore={animateScores}
           />
         </div>
 
@@ -59,9 +63,9 @@ export default function QuestionDisplay({
             <PostWithUpdatingScore
               key={response.id}
               content={response.content}
-              shouldUpdateScore={response.status === "done"}
               initialScore={0}
-              scoreDirection="up"
+              targetScore={response.score}
+              animateScore={animateScores}
               className="pb-8 border-b border-so-black-25"
             />
           ))}

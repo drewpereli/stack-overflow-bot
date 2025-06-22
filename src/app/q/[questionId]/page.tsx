@@ -20,11 +20,13 @@ export default async function QuestionPage({
       title: true,
       content: true,
       status: true,
+      score: true,
       answers: {
         select: {
           id: true,
           order: true,
           content: true,
+          score: true,
         },
         orderBy: {
           order: "asc",
