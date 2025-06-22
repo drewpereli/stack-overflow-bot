@@ -9,7 +9,7 @@ import { nanoid } from "nanoid";
 export const maxDuration = 30;
 
 export async function POST(
-  req: Request,
+  _: Request,
   { params }: { params: Promise<{ questionId: string }> },
 ) {
   const { questionId } = await params;
@@ -25,17 +25,20 @@ export async function POST(
   });
 
   if (!question) {
-    return new Response(JSON.stringify({ error: "Question not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json(
+      { error: "Question not found" },
+      {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 
   if (question.status !== "PENDING") {
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         error: "Question is not in PENDING status. Cannot generate answers.",
-      }),
+      },
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
