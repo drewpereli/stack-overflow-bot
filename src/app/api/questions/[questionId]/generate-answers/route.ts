@@ -72,6 +72,7 @@ export async function POST(
             questionId: question.id,
             order: idx + 1,
             answerType,
+            score: randomInt(10, 50),
           },
         });
       }
