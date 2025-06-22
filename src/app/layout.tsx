@@ -19,6 +19,19 @@ export default function RootLayout({
         <Header />
         {children}
         <Toaster />
+        <a
+          href="https://www.buymeacoffee.com/padre.hoyt"
+          target="_blank"
+          className="fixed bottom-4 right-4"
+        >
+          <Image
+            src="/bmc-logo-yellow.png"
+            width={50}
+            height={50}
+            alt="Buy Me A Coffee Logo"
+            className="rounded-full"
+          />
+        </a>
       </body>
     </html>
   );
