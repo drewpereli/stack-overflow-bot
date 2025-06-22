@@ -8,6 +8,13 @@ import { nanoid } from "nanoid";
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
+/**
+ * This route is responsible for generating answers to a question and streaming them back to the client.
+ * It is invoked by the `useChat` hook in the Question component (src/app/q/[questionId]/Question.tsx).
+ * The response needs to match a specific format that the `useChat` hook expects.
+ * useChat is generally used for generating a single response after a user prompt, but in this case we use it to generate multiple responses (answers) to a question, and we have no user prompt because we generate it from the question record.
+ * However, the vercel ai sdk has a built-in way of streaming multiple responses for a single request. See https://ai-sdk.dev/cookbook/next/stream-text-multistep
+ */
 export async function POST(
   _: Request,
   { params }: { params: Promise<{ questionId: string }> },
