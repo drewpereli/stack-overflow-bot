@@ -6,49 +6,62 @@ import ReactMarkdown from "react-markdown";
 
 export function PostWithUpdatingScore({
   content,
-  shouldUpdateScore,
   initialScore,
-  scoreDirection,
+  targetScore,
+  animateScore,
   className,
 }: {
   content: string;
-  shouldUpdateScore: boolean;
   initialScore: number;
-  scoreDirection: "up" | "down";
+  targetScore: number;
+  animateScore: boolean;
   className?: string;
 }) {
-  const [score, setScore] = useState(initialScore);
-
-  useEffect(() => {
-    if (!shouldUpdateScore) return;
-
-    const abortController = new AbortController();
-
-    const scoreChangeCount = randomInt(5, 20);
-
-    const timeouts = Array.from({ length: scoreChangeCount }, () =>
-      randomInt(300, 1000),
-    );
-
-    (async () => {
-      for (const timeout of timeouts) {
-        if (abortController.signal.aborted) {
-          break;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, timeout));
-
-        setScore((prevScore) =>
-          scoreDirection === "up" ? prevScore + 1 : prevScore - 1,
-        );
-      }
-    })();
-
-    return () => abortController.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldUpdateScore]);
+  const score = useUpdatingScore(initialScore, targetScore, animateScore);
 
   return <Post content={content} score={score} className={className} />;
+}
+
+function useUpdatingScore(initial: number, target: number, enabled: boolean) {
+  const [score, setScore] = useState(enabled ? initial : target);
+
+  useEffect(() => {
+    let stopped = false;
+
+    if (!enabled) {
+      setScore(target);
+    } else {
+      setScore(initial);
+
+      const stepCount = Math.abs(target - initial);
+      const delays = Array.from({ length: stepCount }, () =>
+        randomInt(200, 600),
+      );
+
+      (async () => {
+        for (const delay of delays) {
+          if (stopped) break;
+
+          await new Promise((resolve) => setTimeout(resolve, delay));
+
+          setScore((prevScore) => {
+            if (target > prevScore) {
+              return prevScore + 1;
+            } else if (target < prevScore) {
+              return prevScore - 1;
+            }
+            return prevScore;
+          });
+        }
+      })();
+    }
+
+    return () => {
+      stopped = true;
+    };
+  }, [initial, target, enabled]);
+
+  return score;
 }
 
 export function Post({
