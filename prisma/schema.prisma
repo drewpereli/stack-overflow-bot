@@ -18,6 +18,7 @@ model Question {
   id      String         @id
   title   String
   content String?
+  score   Int            @default(0)
   status  QuestionStatus @default(PENDING)
 
   answers Answer[]
@@ -36,6 +37,7 @@ model Answer {
   content    String
   answerType String
   order      Int
+  score      Int    @default(0)
 
   questionId String
   question   Question @relation(fields: [questionId], references: [id])
