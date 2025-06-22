@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Stack Overflow Bot",
@@ -24,7 +25,7 @@ export default function RootLayout({
 function Header() {
   return (
     <header className="h-14 border-b border-so-black-25 w-full max-w-content-width mx-auto flex items-center py-2.5">
-      <span className="flex items-center gap-0.5 text-lg">
+      <Link href="/" className="flex items-center gap-0.5 text-lg">
         <Image
           src="/so-logo.webp"
           alt="Stack overflow logo"
@@ -34,7 +35,7 @@ function Header() {
 
         <span className="font-light">stank</span>
         <span className="font-bold">overfart</span>
-      </span>
+      </Link>
 
       <span className="ml-8 flex items-center gap-8 text-sm text-gray-500">
         <span>Products</span>
