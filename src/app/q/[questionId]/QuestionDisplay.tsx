@@ -63,7 +63,7 @@ export default function QuestionDisplay({
           />
         </div>
 
-        <div className="space-y-8 mt-20">
+        <div className="space-y-8 mt-10">
           <h2 className="text-xl">
             {responsesWithContent.length === 1
               ? "1 Answer"
