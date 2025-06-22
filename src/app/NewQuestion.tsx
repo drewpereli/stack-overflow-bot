@@ -41,6 +41,7 @@ export default function NewQuestion({
                 type="text"
                 id="title"
                 value={title}
+                required
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Is there an R function for finding the index of an element in a vector?"
                 className="p-2 text-sm border border-so-black-25 rounded w-full disabled:bg-gray-100"
@@ -63,6 +64,7 @@ export default function NewQuestion({
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                required
                 id="content"
                 className="p-2 text-sm border border-so-black-25 rounded w-full disabled:bg-gray-100"
                 rows={15}
