@@ -1,18 +1,15 @@
 "use client";
 
-export default function Ask({
-  title,
-  content,
-  setTitle,
-  setContent,
+import { useState } from "react";
+
+export default function NewQuestion({
   onSubmit,
 }: {
-  title: string;
-  content: string;
-  setTitle: (title: string) => void;
-  setContent: (content: string) => void;
-  onSubmit: () => void;
+  onSubmit: ({ title, content }: { title: string; content: string }) => void;
 }) {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
   return (
     <main className="p-8 bg-alt-bg basis-0 grow w-screen overflow-y-auto">
       <div className="w-full max-w-content-width mx-auto space-y-12">
@@ -22,7 +19,7 @@ export default function Ask({
           className="space-y-8"
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit();
+            onSubmit({ title, content });
           }}
         >
           <section className="space-y-8 bg-white shadow rounded p-4">
