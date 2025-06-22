@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Image from "next/image";
 import Link from "next/link";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Stack Overflow Bot",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen">
         <Header />
         {children}
+        <Toaster />
       </body>
     </html>
   );

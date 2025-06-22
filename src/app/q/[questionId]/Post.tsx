@@ -3,6 +3,7 @@
 import { randomInt } from "es-toolkit";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 
 export function PostWithUpdatingScore({
   content,
@@ -108,17 +109,24 @@ export function Post({
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
 
-      {shareLink && (
-        <div className="space-y-10 col-start-2 text-sm">
-          <button
-            className="text-[rgb(99,107,116)] cursor-pointer"
-            type="button"
-            onClick={() => navigator.clipboard.writeText(shareLink)}
-          >
-            Share
-          </button>
-        </div>
-      )}
+      <div className="space-y-10 col-start-2 text-sm">
+        {shareLink ? <CopyableLink href={shareLink} /> : <>&nbsp;</>}
+      </div>
     </div>
+  );
+}
+
+function CopyableLink({ href }: { href: string }) {
+  return (
+    <button
+      className="text-sm text-[rgb(99,107,116)] hover:text-gray-700 cursor-pointer"
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(href);
+        toast.success("Link copied to clipboard");
+      }}
+    >
+      Share
+    </button>
   );
 }
