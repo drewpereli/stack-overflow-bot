@@ -1,7 +1,12 @@
 import { ANSWER_TYPE, AnswerType } from "@/app/response-types";
 import { prisma } from "@/lib/prisma";
 import { openai } from "@ai-sdk/openai";
-import { createDataStreamResponse, streamText } from "ai";
+import {
+  createDataStreamResponse,
+  simulateReadableStream,
+  streamText,
+} from "ai";
+import { MockLanguageModelV1 } from "ai/test";
 import { randomInt, shuffle } from "es-toolkit";
 import { nanoid } from "nanoid";
 
@@ -96,6 +101,34 @@ export async function POST(
 }
 
 function generateResponse(prompt: string, answerType: AnswerType) {
+  if (process.env.FAKE_RESPONSES === "true") {
+    return streamText({
+      model: new MockLanguageModelV1({
+        doStream: async () => ({
+          rawCall: { rawPrompt: null, rawSettings: {} },
+          stream: simulateReadableStream({
+            chunks: [
+              ...["Answer", "of", "type", answerType].map(
+                (word) =>
+                  ({ type: "text-delta", textDelta: word + " " }) as const,
+              ),
+              {
+                type: "finish",
+                finishReason: "stop",
+                logprobs: undefined,
+                usage: { completionTokens: 10, promptTokens: 3 },
+              },
+            ],
+            initialDelayInMs: 300,
+            chunkDelayInMs: 100,
+          }),
+        }),
+      }),
+      system: getSystemPrompt(answerType),
+      prompt,
+    });
+  }
+
   return streamText({
     model: openai("gpt-4.1-nano"),
     system: getSystemPrompt(answerType),
