@@ -37,3 +37,13 @@ body {
     content: '\00a0';
   }
 }
+
+@keyframes highlightFade {
+  0% { background-color: rgba(255, 191, 0, 0.4); }
+  100% { background-color: transparent; }
+}
+
+.highlight {
+  animation: highlightFade 3s ease;
+  animation-delay: 0.5s;
+}

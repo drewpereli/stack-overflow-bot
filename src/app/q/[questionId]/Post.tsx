@@ -6,30 +6,18 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 
 export function PostWithUpdatingScore({
-  content,
   initialScore,
   targetScore,
   animateScore,
-  shareLink,
-  className,
+  ...postProps
 }: {
-  content: string;
   initialScore: number;
   targetScore: number;
   animateScore: boolean;
-  shareLink?: string;
-  className?: string;
-}) {
+} & Omit<PostProps, "score">) {
   const score = useUpdatingScore(initialScore, targetScore, animateScore);
 
-  return (
-    <Post
-      content={content}
-      score={score}
-      shareLink={shareLink}
-      className={className}
-    />
-  );
+  return <Post {...postProps} score={score} />;
 }
 
 function useUpdatingScore(initial: number, target: number, enabled: boolean) {
@@ -74,20 +62,19 @@ function useUpdatingScore(initial: number, target: number, enabled: boolean) {
   return score;
 }
 
-export function Post({
-  content,
-  score,
-  shareLink,
-  className,
-}: {
+type PostProps = {
   content: string;
   score: number;
   shareLink?: string;
   className?: string;
-}) {
+  id?: string;
+};
+
+export function Post({ content, score, shareLink, className, id }: PostProps) {
   return (
     <div
       className={`grid grid-cols-[2.5rem_1fr] items-start gap-x-4 gap-y-10 ${className ?? ""}`}
+      id={id}
     >
       <div className="flex flex-col items-center gap-2">
         <span className="flex items-center justify-center w-10 h-10 rounded-full border border-so-black-25">

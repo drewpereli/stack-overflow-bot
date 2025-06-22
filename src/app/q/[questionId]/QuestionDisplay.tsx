@@ -1,7 +1,7 @@
 "use client";
 
 import { randomInt } from "es-toolkit";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PostWithUpdatingScore } from "./Post";
 import { Answer, Question } from "@/generated/prisma";
 
@@ -16,10 +16,12 @@ export default function QuestionDisplay({
   question,
   animateScores,
   includeShareLinks,
+  highlightedAnswerId,
 }: {
   question: QuestionData;
   animateScores: boolean;
   includeShareLinks: boolean;
+  highlightedAnswerId?: string;
 }) {
   const [viewCount, setViewCount] = useState(0);
 
@@ -31,8 +33,27 @@ export default function QuestionDisplay({
 
   const isClient = useIsClient();
 
+  const scrollContainer = useRef(null);
+
+  useEffect(() => {
+    if (highlightedAnswerId && scrollContainer.current) {
+      const highlightedElement = (
+        scrollContainer.current as HTMLElement
+      ).querySelector(`#${highlightedAnswerId}`);
+
+      if (highlightedElement) {
+        highlightedElement.scrollIntoView({
+          block: "start",
+        });
+      }
+    }
+  }, [highlightedAnswerId]);
+
   return (
-    <main className="p-8 bg-white basis-0 grow w-screen overflow-y-auto">
+    <main
+      className="p-8 bg-white basis-0 grow w-screen overflow-y-auto"
+      ref={scrollContainer}
+    >
       <div className="w-full max-w-content-width mx-auto">
         <div className="border-b border-so-black-25 pb-3 space-y-3">
           <h1 className="text-black text-2xl">{question.title}</h1>
@@ -63,7 +84,7 @@ export default function QuestionDisplay({
           />
         </div>
 
-        <div className="space-y-8 mt-10">
+        <div className="space-y-4 mt-10">
           <h2 className="text-xl">
             {responsesWithContent.length === 1
               ? "1 Answer"
@@ -73,6 +94,7 @@ export default function QuestionDisplay({
           {responsesWithContent.map((response) => (
             <PostWithUpdatingScore
               key={response.id}
+              id={response.id}
               content={response.content}
               initialScore={0}
               targetScore={response.score}
@@ -82,7 +104,7 @@ export default function QuestionDisplay({
                   ? relativeUrlToAbsolute(`/q/${question.id}?a=${response.id}`)
                   : undefined
               }
-              className="pb-8 border-b border-so-black-25"
+              className={`py-4 border-b border-so-black-25 ${response.id === highlightedAnswerId ? "highlight" : ""}`}
             />
           ))}
         </div>
