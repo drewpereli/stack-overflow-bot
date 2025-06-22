@@ -9,17 +9,26 @@ export function PostWithUpdatingScore({
   initialScore,
   targetScore,
   animateScore,
+  shareLink,
   className,
 }: {
   content: string;
   initialScore: number;
   targetScore: number;
   animateScore: boolean;
+  shareLink?: string;
   className?: string;
 }) {
   const score = useUpdatingScore(initialScore, targetScore, animateScore);
 
-  return <Post content={content} score={score} className={className} />;
+  return (
+    <Post
+      content={content}
+      score={score}
+      shareLink={shareLink}
+      className={className}
+    />
+  );
 }
 
 function useUpdatingScore(initial: number, target: number, enabled: boolean) {
@@ -67,14 +76,18 @@ function useUpdatingScore(initial: number, target: number, enabled: boolean) {
 export function Post({
   content,
   score,
+  shareLink,
   className,
 }: {
   content: string;
   score: number;
+  shareLink?: string;
   className?: string;
 }) {
   return (
-    <div className={`flex items-start gap-4 ${className ?? ""}`}>
+    <div
+      className={`grid grid-cols-[2.5rem_1fr] items-start gap-x-4 gap-y-10 ${className ?? ""}`}
+    >
       <div className="flex flex-col items-center gap-2">
         <span className="flex items-center justify-center w-10 h-10 rounded-full border border-so-black-25">
           <svg width="18" height="18" viewBox="0 0 18 18">
@@ -94,6 +107,18 @@ export function Post({
       <div className="text-black markdown">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
+
+      {shareLink && (
+        <div className="space-y-10 col-start-2 text-sm">
+          <button
+            className="text-[rgb(99,107,116)] cursor-pointer"
+            type="button"
+            onClick={() => navigator.clipboard.writeText(shareLink)}
+          >
+            Share
+          </button>
+        </div>
+      )}
     </div>
   );
 }

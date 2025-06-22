@@ -36,13 +36,16 @@ export default function QuestionComponent({
     ? responses.map((r) => ({ ...r, score: 0 }))
     : question.answers;
 
+  const questionData = {
+    ...question,
+    answers: displayResponses,
+  };
+
   return (
     <QuestionDisplay
-      title={question.title}
-      content={question.content ?? question.title}
-      score={question.score}
-      responses={displayResponses}
+      question={questionData}
       animateScores={startedAsPending.current}
+      includeShareLinks={question.status === "COMPLETED"}
     />
   );
 }
