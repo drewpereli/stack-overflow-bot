@@ -1,4 +1,4 @@
-import { RESPONSE_TYPES, ResponseType } from "@/app/response-types";
+import { ANSWER_TYPE, AnswerType } from "@/app/response-types";
 import { openai } from "@ai-sdk/openai";
 import { createDataStreamResponse, streamText } from "ai";
 import { randomInt, shuffle } from "es-toolkit";
@@ -12,17 +12,17 @@ export async function POST(req: Request) {
   };
 
   const responseCount = randomInt(3, 6);
-  const responseTypes = shuffle(RESPONSE_TYPES).slice(0, responseCount);
+  const answerTypes = shuffle(ANSWER_TYPE).slice(0, responseCount);
 
   const prompt = messages[0].content;
 
   return createDataStreamResponse({
     execute: async (dataStream) => {
-      for (const [idx, responseType] of responseTypes.entries()) {
-        const result = generateResponse(prompt, responseType);
+      for (const [idx, answerType] of answerTypes.entries()) {
+        const result = generateResponse(prompt, answerType);
 
         const isFirst = idx === 0;
-        const isLast = idx === responseTypes.length - 1;
+        const isLast = idx === answerTypes.length - 1;
 
         result.mergeIntoDataStream(dataStream, {
           experimental_sendStart: isFirst,
@@ -37,15 +37,15 @@ export async function POST(req: Request) {
   });
 }
 
-function generateResponse(prompt: string, responseType: ResponseType) {
+function generateResponse(prompt: string, answerType: AnswerType) {
   return streamText({
     model: openai("gpt-4o"),
-    system: getSystemPrompt(responseType),
+    system: getSystemPrompt(answerType),
     prompt,
   });
 }
 
-function getSystemPrompt(responseType: ResponseType) {
+function getSystemPrompt(answerType: AnswerType) {
   const basePrompt = {
     condescending: `
       You are an expert software engineer, but you have a superiority complex and respond with subtle condescension. 
@@ -114,7 +114,7 @@ function getSystemPrompt(responseType: ResponseType) {
       Make sure to include the fact that you are the creator of the product or service, and that it is the best solution to their problem.
       Respond casually and coldly, not like a salesperson or a promoter.
     `,
-  }[responseType];
+  }[answerType];
 
   return (
     `A user has posted a question to a programming forum. ` +
