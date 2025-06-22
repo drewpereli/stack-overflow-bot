@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AnswerDisplay from "./AnswerDisplay";
 
 export default function Answer({
@@ -69,13 +69,16 @@ function useGenerateResponses(prompt: string) {
         }
       });
     });
-
-    return () => stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
+
+  // Stupid strict mode issue workaround
+  const initialized = useRef(false);
 
   // Kick off the chat with the initial prompt
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     append({ role: "user", content: prompt });
 
     return () => stop();
