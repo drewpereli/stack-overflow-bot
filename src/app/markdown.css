@@ -1,0 +1,15 @@
+.markdown {
+  @apply space-y-4;
+  
+  & a {
+    @apply text-blue-600 hover:text-blue-800 underline;
+  }
+
+  & code, & pre {
+    @apply bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded;
+  }
+
+  & pre > code {
+    @apply p-0;
+  }
+}
