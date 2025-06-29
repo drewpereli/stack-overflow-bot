@@ -3,23 +3,21 @@
 import { randomInt } from "es-toolkit";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 
 export function PostWithUpdatingScore({
-  content,
   initialScore,
   targetScore,
   animateScore,
-  className,
+  ...postProps
 }: {
-  content: string;
   initialScore: number;
   targetScore: number;
   animateScore: boolean;
-  className?: string;
-}) {
+} & Omit<PostProps, "score">) {
   const score = useUpdatingScore(initialScore, targetScore, animateScore);
 
-  return <Post content={content} score={score} className={className} />;
+  return <Post {...postProps} score={score} />;
 }
 
 function useUpdatingScore(initial: number, target: number, enabled: boolean) {
@@ -64,17 +62,20 @@ function useUpdatingScore(initial: number, target: number, enabled: boolean) {
   return score;
 }
 
-export function Post({
-  content,
-  score,
-  className,
-}: {
+type PostProps = {
   content: string;
   score: number;
+  shareLink?: string;
   className?: string;
-}) {
+  id?: string;
+};
+
+export function Post({ content, score, shareLink, className, id }: PostProps) {
   return (
-    <div className={`flex items-start gap-4 ${className ?? ""}`}>
+    <div
+      className={`grid grid-cols-[2.5rem_1fr] items-start gap-x-4 gap-y-10 ${className ?? ""}`}
+      id={id}
+    >
       <div className="flex flex-col items-center gap-2">
         <span className="flex items-center justify-center w-10 h-10 rounded-full border border-so-black-25">
           <svg width="18" height="18" viewBox="0 0 18 18">
@@ -94,6 +95,25 @@ export function Post({
       <div className="text-black markdown">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
+
+      <div className="space-y-10 col-start-2 text-sm">
+        {shareLink ? <CopyableLink href={shareLink} /> : <>&nbsp;</>}
+      </div>
     </div>
+  );
+}
+
+function CopyableLink({ href }: { href: string }) {
+  return (
+    <button
+      className="text-sm text-[rgb(99,107,116)] hover:text-gray-700 cursor-pointer"
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(href);
+        toast.success("Link copied to clipboard");
+      }}
+    >
+      Share
+    </button>
   );
 }

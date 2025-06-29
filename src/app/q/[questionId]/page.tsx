@@ -5,8 +5,10 @@ import Question from "./Question";
 export const dynamic = "force-dynamic";
 
 export default async function QuestionPage({
+  searchParams,
   params,
 }: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
   params: Promise<{ questionId: string }>;
 }) {
   const { questionId } = await params;
@@ -39,5 +41,12 @@ export default async function QuestionPage({
     notFound();
   }
 
-  return <Question question={question} />;
+  const searchParamsObj = await searchParams;
+
+  const highlightedAnswerId =
+    typeof searchParamsObj.a === "string" ? searchParamsObj.a : undefined;
+
+  return (
+    <Question question={question} highlightedAnswerId={highlightedAnswerId} />
+  );
 }

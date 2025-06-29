@@ -16,8 +16,10 @@ export type QuestionWithAnswers = Pick<
 
 export default function QuestionComponent({
   question,
+  highlightedAnswerId,
 }: {
   question: QuestionWithAnswers;
+  highlightedAnswerId?: string;
 }) {
   const isPending = question.status === "PENDING";
 
@@ -36,13 +38,19 @@ export default function QuestionComponent({
     ? responses.map((r) => ({ ...r, score: 0 }))
     : question.answers;
 
+  const questionData = {
+    ...question,
+    answers: displayResponses,
+  };
+
   return (
     <QuestionDisplay
-      title={question.title}
-      content={question.content ?? question.title}
-      score={question.score}
-      responses={displayResponses}
+      question={questionData}
       animateScores={startedAsPending.current}
+      includeShareLinks={question.status === "COMPLETED"}
+      highlightedAnswerId={
+        question.status === "COMPLETED" ? highlightedAnswerId : undefined
+      }
     />
   );
 }
