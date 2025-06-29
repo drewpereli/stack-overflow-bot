@@ -130,7 +130,7 @@ function generateResponse(prompt: string, answerType: AnswerType) {
   }
 
   return streamText({
-    model: openai("gpt-4.1-nano"),
+    model: openai("gpt-4.1"),
     system: getSystemPrompt(answerType),
     prompt,
   });
