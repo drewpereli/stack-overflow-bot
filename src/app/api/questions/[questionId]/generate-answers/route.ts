@@ -97,6 +97,9 @@ export async function POST(
         data: { status: "COMPLETED" },
       });
     },
+    onError(error) {
+      throw error;
+    },
   });
 }
 
